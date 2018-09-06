@@ -34,7 +34,9 @@ logger.info({"Source commits: ${sourceCommits}".toString()})
 
 // Switch to target branch
 String targetBranch = options.tb ?: 'master'
+logger.info({"Target branch: ${targetBranch}".toString()})
 logger.info("git checkout ${tempRemote}/${targetBranch}".execute().text.trim())
+logger.info("git branch".execute().text.trim())
 
 // Get target repository commits
 def targetCommits = getCommits()
