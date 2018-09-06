@@ -1,1 +1,1 @@
-groovy /scripts/SyncGitRepos.groovy -tr "$PLUGIN_TARGET_REPO" -tb "$PLUGIN_TARGET_BRANCH"
+groovy /scripts/SyncGitRepos.groovy -tr "$PLUGIN_TARGET_REPO" -tb "$PLUGIN_TARGET_BRANCH" --debug $PLUGIN_DEBUG
