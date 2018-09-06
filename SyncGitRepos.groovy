@@ -22,6 +22,9 @@ if(!options.tr) {
 String tempRemote = 'upstream'
 "git remote add ${tempRemote} ${options.tr}".execute()
 
+// All remotes
+logger.info('git remote -v'.execute().text.trim())
+
 // Fetch all remote branches/tags
 logger.info('git fetch --all'.execute().text.trim())
 
