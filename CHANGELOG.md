@@ -7,3 +7,6 @@
 ### 2018-09-05
 - Added an entry-point file
 - Added flag to enable/disable debug logs
+
+### 2018-09-08
+- Updated readme with usage instructions
