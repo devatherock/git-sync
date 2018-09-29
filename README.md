@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/devaprasadh/git-sync.svg?style=svg)](https://circleci.com/gh/devaprasadh/git-sync)
+[![Docker Pulls](https://img.shields.io/docker/pulls/devatherock/git-sync.svg)](https://hub.docker.com/r/devatherock/git-sync/)
 # git-sync
 drone.io/CircleCI plugin to sync the contents of a git repository with another
 

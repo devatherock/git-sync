@@ -10,3 +10,6 @@
 
 ### 2018-09-08
 - Updated readme with usage instructions
+
+### 2018-09-28
+- Used `alpine` image and installed `git` and `openssh` using `apk`
