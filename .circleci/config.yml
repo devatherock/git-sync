@@ -2,7 +2,7 @@ version: 2
 jobs:
   publish:
     docker:
-      - image: docker:17.03.2-ce
+      - image: docker:17.12.1-ce
     working_directory: ~/git-sync
     steps:
       - checkout 
@@ -16,10 +16,10 @@ jobs:
       
 workflows:
   version: 2
-  docker-publish:
+  docker_publish:
     jobs:
-    - publish:
-        filters:
-          branches:
-            only: master
+      - publish:
+          filters:
+            branches:
+              only: master
 

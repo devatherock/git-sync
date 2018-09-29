@@ -13,3 +13,6 @@
 
 ### 2018-09-28
 - Used `alpine` image and installed `git` and `openssh` using `apk`
+
+### 2018-09-29
+- Added `License.txt`

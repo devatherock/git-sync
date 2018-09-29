@@ -12,27 +12,27 @@ version: 2
 jobs:
   sync:
     docker:
-    - image: devatherock/git-sync:1.0.0
+      - image: devatherock/git-sync:1.0.0
     working_directory: ~/my-source-repo
     environment:
       PLUGIN_TARGET_REPO: "git@bitbucket.org:xyz/my-target-repo.git"                        # SSH git URI of target repository 
       PLUGIN_TARGET_BRANCH: master                                                          # Branch to sync to in target repository. Optional, defaults to master
       PLUGIN_DEBUG: false                                                                   # Flag to enable debug logs. Optional, by default, debug logs are disabled
     steps:
-    - checkout
-    - add_ssh_keys:
-        fingerprints:
-        - "ssh key fingerprint"                                                             # Fingerprint of SSH key with write access to target repository
-    - run: sh /scripts/entry-point.sh
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "ssh key fingerprint"                                                             # Fingerprint of SSH key with write access to target repository
+      - run: sh /scripts/entry-point.sh
            
 workflows:
   version: 2
   git-sync:
     jobs:
-    - sync:
-        filters:
-          branches:
-            only: master                                                                    # Source branch
+      - sync:
+          filters:
+            branches:
+              only: master                                                                    # Source branch
 ```
 
 ### On tag
