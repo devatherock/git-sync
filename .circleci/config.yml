@@ -13,7 +13,16 @@ jobs:
           docker build -t devatherock/git-sync:$TAG .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/git-sync:$TAG
-      
+  docker_build_dry_run:
+    docker:
+      - image: docker:17.12.1-ce
+    working_directory: ~/git-sync
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run: docker build .
+            
 workflows:
   version: 2
   docker_publish:
@@ -22,4 +31,9 @@ workflows:
           filters:
             branches:
               only: master
-
+  pr_check:
+    jobs:
+      - docker_build_dry_run:
+          filters:
+            branches:
+              ignore: master

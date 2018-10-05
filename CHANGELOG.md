@@ -16,3 +16,7 @@
 
 ### 2018-09-29
 - Added `License.txt`
+
+### 2018-10-04
+- Added PR check
+- Upgraded docker image version to `17.12.1-ce`

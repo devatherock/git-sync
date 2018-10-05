@@ -8,7 +8,7 @@ ENV PLUGIN_DEBUG false
 ADD SyncGitRepos.groovy /scripts/SyncGitRepos.groovy
 ADD entry-point.sh /scripts/entry-point.sh
 
-# Install git
+# Install git - Set the user as root for apk
 USER root
 RUN apk --update add git openssh
 
