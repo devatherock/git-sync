@@ -7,9 +7,6 @@ jobs:
     environment:
       PLUGIN_SCRIPT_PATH: SyncGitRepos.groovy
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "33:54:31:a6:79:dc:04:c8:66:c6:8c:f1:cc:c2:32:22"
       - checkout
       - run: sh /scripts/entry-point.sh
       - persist_to_workspace:
@@ -21,9 +18,6 @@ jobs:
       - image: docker:17.12.1-ce
     working_directory: ~/git-sync
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "33:54:31:a6:79:dc:04:c8:66:c6:8c:f1:cc:c2:32:22"
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
@@ -35,9 +29,6 @@ jobs:
       - image: docker:17.12.1-ce
     working_directory: ~/git-sync
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "33:54:31:a6:79:dc:04:c8:66:c6:8c:f1:cc:c2:32:22"
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
