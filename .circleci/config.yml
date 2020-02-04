@@ -1,18 +1,18 @@
 version: 2
 jobs:
-  publish:
+  groovy_script_to_jar:
     docker:
-      - image: docker:17.12.1-ce
+      - image: devatherock/drone-groovy-script-to-jar:2.4-alpine
     working_directory: ~/git-sync
+    environment:
+      PLUGIN_SCRIPT_PATH: SyncGitRepos.groovy
     steps:
-      - checkout 
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run: |
-          TAG=1.0.0
-          docker build -t devatherock/git-sync:$TAG .
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/git-sync:$TAG
+      - checkout
+      - run: sh /scripts/entry-point.sh
+      - persist_to_workspace:
+          root: ~/git-sync
+          paths:
+            - SyncGitRepos.jar
   docker_build_dry_run:
     docker:
       - image: docker:17.12.1-ce
@@ -21,19 +21,42 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
+      - attach_workspace:
+          at: ~/git-sync
       - run: docker build .
+  publish:
+    docker:
+      - image: docker:17.12.1-ce
+    working_directory: ~/git-sync
+    steps:
+      - checkout 
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - attach_workspace:
+          at: ~/git-sync
+      - run: |
+          TAG=1.0.1
+          docker build -t devatherock/git-sync:$TAG .
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push devatherock/git-sync:$TAG
             
 workflows:
   version: 2
-  docker_publish:
+  build_publish:
     jobs:
-      - publish:
+      - groovy_script_to_jar:
           filters:
             branches:
               only: master
+      - publish:
+          requires:
+            - groovy_script_to_jar
   pr_check:
     jobs:
-      - docker_build_dry_run:
+      - groovy_script_to_jar:
           filters:
             branches:
               ignore: master
+      - docker_build_dry_run:
+          requires:
+            - groovy_script_to_jar

@@ -1,11 +1,11 @@
-FROM groovy:2.4-alpine
+FROM openjdk:8-jre-alpine
 
 MAINTAINER 'Devaprasadh.Xavier <devatherock@gmail.com>'
 
 ENV PLUGIN_TARGET_BRANCH master
 ENV PLUGIN_DEBUG false
 
-ADD SyncGitRepos.groovy /scripts/SyncGitRepos.groovy
+ADD SyncGitRepos.jar /scripts/SyncGitRepos.jar
 ADD entry-point.sh /scripts/entry-point.sh
 
 # Install git - Set the user as root for apk

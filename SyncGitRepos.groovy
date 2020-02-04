@@ -12,21 +12,21 @@ System.setProperty('java.util.logging.SimpleFormatter.format', '%5$s%n')
 def cli = new CliBuilder(usage: 'groovy SyncGitRepos.groovy [options]')
 cli.tr(longOpt: 'target_repo', args: 1, argName: 'target_repo', 'Target git repository')
 cli.tb(longOpt: 'target_branch', args: 1, argName: 'target_branch', 'Target repository branch')
+cli.sc(longOpt: 'start_commit', args: 1, argName: 'start_commit', 'First commit to pick from the source branch')
 cli._(longOpt: 'debug', args: 1, argName: 'debug', 'Flag to turn on debug logging')
 
 def options = cli.parse(args)
-if(!options.tr) {
-    cli.usage()
-    System.exit(1)
-}
 
 // Debug log flag
 @Field boolean debug
-debug = Boolean.parseBoolean(options.debug)
+debug = options.debug ? Boolean.parseBoolean(options.debug) : false
 
 // Add the target repository as another remote
-String tempRemote = 'upstream'
-"git remote add ${tempRemote} ${options.tr}".execute()
+String targetRemote = null
+if(options.tr) {
+    targetRemote = 'upstream'
+    "git remote add ${targetRemote} ${options.tr}".execute()
+}
 
 // All remotes
 debugLog({'git remote -v'.execute().text.trim()})
@@ -35,50 +35,90 @@ debugLog({'git remote -v'.execute().text.trim()})
 logger.info(executeCommand('git fetch --all').trim())
 
 // Get source repository commits
-def sourceCommits = getCommits()
+String startingCommit = null
+def sourceCommits = getCommits(startingCommit)
+if(options.sc) {
+    startingCommit = options.sc
+    sourceCommits = getCommits(startingCommit)
+}
+else {
+    // Get the commit from the penultimate release/tag
+    String allTags = "git for-each-ref refs/tags --sort=-taggerdate --format=%(objectname) --count=2".execute().text
+    debugLog({ "All tags: ${allTags}".toString() })
+
+    if(allTags) {
+        String[] allTagsArray = allTags.trim().split(System.lineSeparator())
+        if(allTagsArray.length > 1) {
+            String previousTagCommit = allTagsArray[allTagsArray.length - 1]
+            debugLog({ "Previous tag commit: ${previousTagCommit}".toString() })
+
+            sourceCommits = getCommits(previousTagCommit)
+            sourceCommits.remove(sourceCommits.size() - 1) // Remove last commit as it would have already been merged
+            startingCommit = sourceCommits.last()
+        }
+    }
+}
+debugLog({ "Start commit: ${startingCommit}".toString() })
 debugLog({ "Source commits: ${sourceCommits}".toString() })
 
 // Switch to target branch
 String targetBranch = options.tb ?: 'master'
 debugLog({ "Target branch: ${targetBranch}".toString() })
-logger.info(executeCommand("git checkout ${tempRemote}/${targetBranch}").trim())
-debugLog({"git branch".execute().text.trim()})
 
-// Get target repository commits
-def targetCommits = getCommits()
-debugLog({"Target commits: ${targetCommits}".toString()})
-
-// Find commits not in target
-def diffCommits = sourceCommits.findAll { !targetCommits.contains(it) }
-logger.info({"Commits not in target: ${diffCommits}".toString()})
-
-if(diffCommits) {
-    // Apply each missing to target
-    // Reverse the list as the older commits have to be applied first
-    diffCommits.reverse().each {
-        logger.info("git cherry-pick ${it}".execute().text)
-    }
-
-    // Push the changes to target remote
-    logger.info(executeCommand("git push ${tempRemote} ${targetBranch}").trim())
+if(targetRemote) {
+    logger.info(executeCommand("git checkout ${targetRemote}/${targetBranch}").trim())
 }
 else {
-    logger.info({"Both repositories are in sync".toString()})
+    logger.info(executeCommand("git checkout -b ${targetBranch} origin/${targetBranch}").trim())
 }
+debugLog({"git branch".execute().text.trim()})
+
+// Reverse the list as the older commits have to be applied first
+sourceCommits.reverse().each { commit ->
+    debugLog({"Cherry picking ${commit}".toString()})
+    logger.info("git cherry-pick ${commit}".execute().text)
+}
+
+// Push the changes to target remote
+if(targetRemote) {
+    logger.info(executeCommand("git push ${targetRemote} ${targetBranch}").trim())
+}
+else {
+    logger.info(executeCommand("git push origin ${targetBranch}").trim())
+}
+
 
 /**
  * Gets the list of commits from the current remote/branch
  *
+ * @param startingCommit
  * @return list of commits
  */
-def getCommits() {
+def getCommits(String startingCommit) {
     def commits = []
 	String commitText = "git log --pretty=oneline -n ${commitLimit}".execute().text.trim()
 
     // If any commits are present
     if(commitText) {
-        commitText.split(System.lineSeparator()).each { commit ->
-            commits.push(whitespacePattern.split(commit)[0])
+        String[] allCommits = commitText.split(System.lineSeparator())
+
+        int index = allCommits.length - 1
+        String commitLine = null
+        String commit = null
+        boolean addCommit = startingCommit ? false : true // If starting commit is not specified, add all commits
+
+        while(index > -1) {
+            commitLine = allCommits[index]
+            commit = whitespacePattern.split(commitLine)[0]
+
+            if(addCommit) {
+                commits.push(commit)
+            }
+            else if(commit == startingCommit){
+                addCommit = true
+                commits.push(commit)
+            }
+            index--
         }
     }
     commits
@@ -88,7 +128,7 @@ def getCommits() {
  * Executes a command and returns the response
  *
  * @param command
- * @return
+ * @return command output
  */
 String executeCommand(String command) {
 	Process process = command.execute()

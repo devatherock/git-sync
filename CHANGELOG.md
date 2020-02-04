@@ -20,3 +20,9 @@
 ### 2018-10-04
 - Added PR check
 - Upgraded docker image version to `17.12.1-ce`
+
+## 1.0.1
+### 2020-02-04
+- Added logic to accept a starting commit sha as input. If it is not specified, the commit sha of the penultimate tag
+will be used as the starting commit
+- Packaged the script into a jar
