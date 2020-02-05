@@ -33,8 +33,11 @@ String targetRemote = null
 String targetRemoteUrl = options.tr ?: null
 if(targetRemoteUrl) {
     targetRemote = 'upstream'
-    "git remote add ${targetRemote} ${targetRemoteUrl}".execute()
-    isHttp = options.tr.startsWith('http')
+    isHttp = targetRemoteUrl.startsWith('http')
+
+    if(!isHttp) {
+        "git remote add ${targetRemote} ${targetRemoteUrl}".execute()
+    }
 }
 else {
     targetRemote = 'origin'
@@ -56,7 +59,8 @@ if(isHttp) {
         debugLog({ "URL without scheme: ${urlSansScheme}".toString() })
 
         targetRemote = 'upstream'
-        "git remote add ${targetRemote} ${httpScheme}://${options.t}:@${urlSansScheme}".execute()
+        logger.info(executeCommand(
+                "git remote add ${targetRemote} ${httpScheme}://${options.t}:${options.t}@${urlSansScheme}"))
     }
 }
 
