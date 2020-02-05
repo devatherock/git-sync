@@ -15,6 +15,8 @@ def cli = new CliBuilder(usage: 'groovy SyncGitRepos.groovy [options]')
 cli.tr(longOpt: 'target_repo', args: 1, argName: 'target_repo', 'Target git repository')
 cli.tb(longOpt: 'target_branch', args: 1, argName: 'target_branch', 'Target repository branch')
 cli.sc(longOpt: 'start_commit', args: 1, argName: 'start_commit', 'First commit to pick from the source branch')
+cli.t(longOpt: 'token', args: 1, argName: 'token', 'Github access token')
+cli.n(longOpt: 'username', args: 1, argName: 'username', 'Username of last committer')
 cli._(longOpt: 'debug', args: 1, argName: 'debug', 'Flag to turn on debug logging')
 
 def options = cli.parse(args)
@@ -23,11 +25,44 @@ def options = cli.parse(args)
 @Field boolean debug
 debug = options.debug ? Boolean.parseBoolean(options.debug) : false
 
+// Indicates if the remote is a HTTP endpoint
+boolean isHttp = false
+
 // Add the target repository as another remote
 String targetRemote = null
-if(options.tr) {
+String targetRemoteUrl = options.tr ?: null
+if(targetRemoteUrl) {
     targetRemote = 'upstream'
-    "git remote add ${targetRemote} ${options.tr}".execute()
+    "git remote add ${targetRemote} ${targetRemoteUrl}".execute()
+    isHttp = options.tr.startsWith('http')
+}
+else {
+    targetRemote = 'origin'
+    targetRemoteUrl = 'git remote get-url --push origin'.execute().text
+    isHttp = targetRemoteUrl.startsWith('http')
+}
+
+if(isHttp) {
+    // If remote is http, git token has to be supplied
+    if(!options.t) {
+        logger.severe({"Http remote '${targetRemoteUrl}' used but git token not supplied"})
+        System.exit(1)
+    }
+    else {
+        int urlIndex = targetRemoteUrl.indexOf('://')
+        String httpScheme = targetRemoteUrl.substring(0, urlIndex)
+        String urlSansScheme = targetRemoteUrl.substring(urlIndex + 3)
+        debugLog({ "Http scheme: ${httpScheme}".toString() })
+        debugLog({ "URL without scheme: ${urlSansScheme}".toString() })
+
+        targetRemote = 'upstream'
+        "git remote add ${targetRemote} ${httpScheme}://${options.t}:@${urlSansScheme}".execute()
+    }
+}
+
+// Configure git username if supplied
+if(options.n) {
+    executeCommand("git config user.name ${options.n}")
 }
 
 // All remotes
@@ -67,27 +102,17 @@ debugLog({ "Source commits: ${sourceCommits}".toString() })
 String targetBranch = options.tb ?: 'master'
 debugLog({ "Target branch: ${targetBranch}".toString() })
 
-if(targetRemote) {
-    logger.info(executeCommand("git checkout ${targetRemote}/${targetBranch}").trim())
-}
-else {
-    logger.info(executeCommand("git checkout -b ${targetBranch} origin/${targetBranch}").trim())
-}
+logger.info(executeCommand("git checkout -b ${targetBranch} ${targetRemote}/${targetBranch}").trim())
 debugLog({"git branch".execute().text.trim()})
 
-// Reverse the list as the older commits have to be applied first
-sourceCommits.reverse().each { commit ->
+// Apply the commits
+sourceCommits.each { commit ->
     debugLog({"Cherry picking ${commit}".toString()})
     logger.info("git cherry-pick ${commit}".execute().text)
 }
 
 // Push the changes to target remote
-if(targetRemote) {
-    logger.info(executeCommand("git push ${targetRemote} ${targetBranch}").trim())
-}
-else {
-    logger.info(executeCommand("git push origin ${targetBranch}").trim())
-}
+logger.info(executeCommand("git push ${targetRemote} ${targetBranch}").trim())
 
 
 /**
@@ -114,11 +139,11 @@ def getCommits(String startingCommit) {
             commit = whitespacePattern.split(commitLine)[0]
 
             if(addCommit) {
-                commits.push(commit)
+                commits.add(commit)
             }
-            else if(commit == startingCommit){
+            else if(commit == startingCommit) {
                 addCommit = true
-                commits.push(commit)
+                commits.add(commit)
             }
             index--
         }

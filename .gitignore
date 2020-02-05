@@ -1,2 +1,4 @@
 .project
 git-sync.iml
+*.jar
+.DS_Store

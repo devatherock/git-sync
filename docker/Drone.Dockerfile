@@ -6,7 +6,7 @@ ENV PLUGIN_TARGET_BRANCH master
 ENV PLUGIN_DEBUG false
 
 ADD SyncGitRepos.jar /scripts/SyncGitRepos.jar
-ADD entry-point.sh /scripts/entry-point.sh
+ADD docker/drone-entry-point.sh /scripts/entry-point.sh
 
 # Install git - Set the user as root for apk
 USER root
