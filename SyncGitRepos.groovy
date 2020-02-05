@@ -112,7 +112,8 @@ debugLog({"git branch".execute().text.trim()})
 // Apply the commits
 sourceCommits.each { commit ->
     debugLog({"Cherry picking ${commit}".toString()})
-    logger.info("git cherry-pick ${commit}".execute().text)
+    Process process = "git cherry-pick ${commit}".execute()
+    logger.info({"Cherry pick ${commit} - exit code: ${process.exitValue()} ${process.text}".toString()})
 }
 
 // Push the changes to target remote
