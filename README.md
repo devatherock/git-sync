@@ -12,7 +12,7 @@ version: 2
 jobs:
   sync:
     docker:
-      - image: devatherock/git-sync:1.0.1
+      - image: devatherock/git-sync:1.0.3
     working_directory: ~/my-source-repo
     environment:
       PLUGIN_TARGET_REPO: "git@bitbucket.org:xyz/my-target-repo.git"                        # Git URI of target repository. If not specified, same as the source repo

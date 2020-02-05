@@ -23,7 +23,7 @@ git-sync:
   when:
     branch: master                                            # Source branch
     event: push
-  image: devatherock/git-sync:1.0.1
+  image: devatherock/git-sync:1.0.3
   target_repo: "git@bitbucket.org:xyz/my-target-repo.git"
   target_branch: master
   start_commit: 29186cd
@@ -37,7 +37,7 @@ git-sync:
   when:
     ref: refs/tags/v*
     event: tag
-  image: devatherock/git-sync:1.0.1
+  image: devatherock/git-sync:1.0.3
   target_branch: prod
   secrets: [ git_sync_token ]
 ```
