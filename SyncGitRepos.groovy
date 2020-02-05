@@ -60,7 +60,7 @@ if(isHttp) {
 
         targetRemote = 'upstream'
         logger.info(executeCommand(
-                "git remote add ${targetRemote} ${httpScheme}://${options.t}:${options.t}@${urlSansScheme}"))
+                "git remote add ${targetRemote} ${httpScheme}://${options.t}:${options.t}@${urlSansScheme}")[0])
     }
 }
 
@@ -73,7 +73,7 @@ if(options.n) {
 debugLog({'git remote -v'.execute().text.trim()})
 
 // Fetch all remote branches/tags
-logger.info(executeCommand('git fetch --all').trim())
+logger.info(executeCommand('git fetch --all')[0].trim())
 
 // Get source repository commits
 String startingCommit = null
@@ -106,18 +106,19 @@ debugLog({ "Source commits: ${sourceCommits}".toString() })
 String targetBranch = options.tb ?: 'master'
 debugLog({ "Target branch: ${targetBranch}".toString() })
 
-logger.info(executeCommand("git checkout -b ${targetBranch} ${targetRemote}/${targetBranch}").trim())
+debugLog({"git branch".execute().text.trim()})
+logger.info(executeCommand("git checkout -b ${targetBranch} ${targetRemote}/${targetBranch}")[0].trim())
 debugLog({"git branch".execute().text.trim()})
 
 // Apply the commits
 sourceCommits.each { commit ->
     debugLog({"Cherry picking ${commit}".toString()})
-    Process process = "git cherry-pick ${commit}".execute()
-    logger.info({"Cherry pick ${commit} - exit code: ${process.exitValue()} ${process.text}".toString()})
+    def cherryPickOutput = executeCommand("git cherry-pick ${commit}")
+    logger.info({"Cherry pick ${commit} - exit code: ${cherryPickOutput[1]} ${cherryPickOutput[0]}".toString()})
 }
 
 // Push the changes to target remote
-logger.info(executeCommand("git push ${targetRemote} ${targetBranch}").trim())
+logger.info(executeCommand("git push ${targetRemote} ${targetBranch}")[0].trim())
 
 
 /**
@@ -162,14 +163,14 @@ def getCommits(String startingCommit) {
  * @param command
  * @return command output
  */
-String executeCommand(String command) {
+List executeCommand(String command) {
 	Process process = command.execute()
     StringBuilder out = new StringBuilder()
     StringBuilder err = new StringBuilder()
 	process.consumeProcessOutput( out, err )
 	process.waitFor()
 
-    return "${out}${System.properties['line.separator']}${err}"
+    return [ "${out}${System.properties['line.separator']}${err}", process.exitValue() ]
 }
 
 /**
