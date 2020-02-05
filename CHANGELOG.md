@@ -32,3 +32,7 @@ will be used as the starting commit
 ### 2020-02-05
 - Added support for HTTP git URI
 - Published separate docker images for drone and circle ci
+
+## 1.0.3
+### 2020-02-05
+- Configured git user email to be the email address from drone

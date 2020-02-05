@@ -17,6 +17,7 @@ cli.tb(longOpt: 'target_branch', args: 1, argName: 'target_branch', 'Target repo
 cli.sc(longOpt: 'start_commit', args: 1, argName: 'start_commit', 'First commit to pick from the source branch')
 cli.t(longOpt: 'token', args: 1, argName: 'token', 'Github access token')
 cli.n(longOpt: 'username', args: 1, argName: 'username', 'Username of last committer')
+cli.e(longOpt: 'email', args: 1, argName: 'email', 'Email address of last committer')
 cli._(longOpt: 'debug', args: 1, argName: 'debug', 'Flag to turn on debug logging')
 
 def options = cli.parse(args)
@@ -66,7 +67,14 @@ if(isHttp) {
 
 // Configure git username if supplied
 if(options.n) {
+    debugLog( { "User name: ${options.n}".toString() } )
     executeCommand("git config user.name ${options.n}")
+}
+
+// Configure git user email if supplied
+if(options.e) {
+    debugLog( { "User email: ${options.e}".toString() } )
+    executeCommand("git config user.email ${options.e}")
 }
 
 // All remotes
