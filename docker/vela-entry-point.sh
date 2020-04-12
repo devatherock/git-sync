@@ -1,0 +1,4 @@
+java -jar /scripts/SyncGitRepos.jar -tr "$PARAMETER_TARGET_REPO" \
+  -tb "$PARAMETER_TARGET_BRANCH" -sc "$PARAMETER_START_COMMIT" \
+  --debug $PARAMETER_DEBUG -n "$BUILD_AUTHOR" -e "$BUILD_AUTHOR_EMAIL" \
+  -t "$GIT_SYNC_TOKEN"

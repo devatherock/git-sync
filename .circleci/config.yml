@@ -1,8 +1,12 @@
+docker_image: &docker_image
+  docker:
+    - image: docker:19.03.6
+
 version: 2
 jobs:
   groovy_script_to_jar:
     docker:
-      - image: devatherock/drone-groovy-script-to-jar:2.4-alpine
+      - image: devatherock/drone-groovy-script-to-jar:2.5-alpine
     working_directory: ~/git-sync
     environment:
       PLUGIN_SCRIPT_PATH: SyncGitRepos.groovy
@@ -14,8 +18,7 @@ jobs:
           paths:
             - SyncGitRepos.jar
   docker_build_dry_run_circle:
-    docker:
-      - image: docker:17.12.1-ce
+    <<: *docker_image
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -24,18 +27,25 @@ jobs:
           at: ~/git-sync
       - run: docker build -f docker/CircleCI.Dockerfile .
   docker_build_dry_run_drone:
-    docker:
-      - image: docker:17.12.1-ce
+    <<: *docker_image
     working_directory: ~/git-sync
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: ~/git-sync
-      - run: docker build -f docker/Drone.Dockerfile .    
+      - run: docker build -f docker/Drone.Dockerfile .
+  docker_build_dry_run_vela:
+    <<: *docker_image
+    working_directory: ~/git-sync
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/git-sync
+      - run: docker build -f docker/Vela.Dockerfile .
   publish_circle:
-    docker:
-      - image: docker:17.12.1-ce
+    <<: *docker_image
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -43,13 +53,12 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.3
+          TAG=1.0.4
           docker build -t devatherock/git-sync:$TAG -f docker/CircleCI.Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/git-sync:$TAG
   publish_drone:
-    docker:
-      - image: docker:17.12.1-ce
+    <<: *docker_image
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -57,10 +66,23 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.3
+          TAG=1.0.4
           docker build -t devatherock/drone-git-sync:$TAG -f docker/Drone.Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/drone-git-sync:$TAG        
+          docker push devatherock/drone-git-sync:$TAG
+  publish_vela:
+    <<: *docker_image
+    working_directory: ~/git-sync
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/git-sync
+      - run: |
+          TAG=1.0.4
+          docker build -t devatherock/vela-git-sync:$TAG -f docker/Vela.Dockerfile .
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push devatherock/vela-git-sync:$TAG
 
 workflows:
   version: 2
@@ -75,7 +97,10 @@ workflows:
             - groovy_script_to_jar
       - publish_drone:
           requires:
-            - groovy_script_to_jar      
+            - groovy_script_to_jar
+      - publish_vela:
+          requires:
+            - groovy_script_to_jar
   pr_check:
     jobs:
       - groovy_script_to_jar:
@@ -84,7 +109,10 @@ workflows:
               ignore: master
       - docker_build_dry_run_circle:
           requires:
-            - groovy_script_to_jar        
+            - groovy_script_to_jar
       - docker_build_dry_run_drone:
+          requires:
+            - groovy_script_to_jar
+      - docker_build_dry_run_vela:
           requires:
             - groovy_script_to_jar
