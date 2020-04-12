@@ -172,11 +172,11 @@ def getCommits(String startingCommit) {
  * @return command output
  */
 List executeCommand(String command) {
-	Process process = command.execute()
+    Process process = command.execute()
     StringBuilder out = new StringBuilder()
     StringBuilder err = new StringBuilder()
-	process.consumeProcessOutput( out, err )
-	process.waitFor()
+    process.consumeProcessOutput( out, err )
+    process.waitFor()
 
     return [ "${out}${System.properties['line.separator']}${err}", process.exitValue() ]
 }

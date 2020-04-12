@@ -1,7 +1,9 @@
 [![CircleCI](https://circleci.com/gh/devatherock/git-sync.svg?style=svg)](https://circleci.com/gh/devaprasadh/git-sync)
-[![Docker Pulls](https://img.shields.io/docker/pulls/devatherock/git-sync.svg)](https://hub.docker.com/r/devatherock/git-sync/)
+[![Docker Pulls - CircleCI](https://img.shields.io/docker/pulls/devatherock/git-sync.svg)](https://hub.docker.com/r/devatherock/git-sync/)
+[![Docker Pulls - drone](https://img.shields.io/docker/pulls/devatherock/drone-git-sync.svg)](https://hub.docker.com/r/devatherock/drone-git-sync/)
+[![Docker Pulls - vela](https://img.shields.io/docker/pulls/devatherock/vela-git-sync.svg)](https://hub.docker.com/r/devatherock/vela-git-sync/)
 # git-sync
-drone.io/CircleCI plugin to sync the contents of a git repository with another
+drone.io/CircleCI/vela plugin to sync the contents of a git repository with another
 
 # Usage
 ## CircleCI
@@ -12,7 +14,7 @@ version: 2
 jobs:
   sync:
     docker:
-      - image: devatherock/git-sync:1.0.3
+      - image: devatherock/git-sync:1.0.4
     working_directory: ~/my-source-repo
     environment:
       PLUGIN_TARGET_REPO: "git@bitbucket.org:xyz/my-target-repo.git"                        # Git URI of target repository. If not specified, same as the source repo
@@ -26,7 +28,7 @@ jobs:
           fingerprints:
             - "ssh key fingerprint"                                                             # Fingerprint of SSH key with write access to target repository
       - run: sh /scripts/entry-point.sh
-           
+
 workflows:
   version: 2
   git-sync:
@@ -45,8 +47,8 @@ tags:
   only: /^v[0-9\.]+$/       # Regex to match tag pattern
 ```
 
-Note: To add SSH key with write access to target repository, follow these 
+Note: To add SSH key with write access to target repository, follow these
 [instructions](https://circleci.com/docs/2.0/add-ssh-key/)
 
-## drone.io
+## drone.io and vela
 Please refer [docs](DOCS.md)

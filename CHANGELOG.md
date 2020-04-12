@@ -36,3 +36,8 @@ will be used as the starting commit
 ## 1.0.3
 ### 2020-02-05
 - Configured git user email to be the email address from drone
+
+## 1.0.4
+### 2020-04-12
+- [Issue 3](https://github.com/devatherock/git-sync/issues/3) - Made the plugin
+compatible with vela
