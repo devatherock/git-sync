@@ -1,7 +1,8 @@
-[![CircleCI](https://circleci.com/gh/devatherock/git-sync.svg?style=svg)](https://circleci.com/gh/devaprasadh/git-sync)
-[![Docker Pulls - CircleCI](https://img.shields.io/docker/pulls/devatherock/git-sync.svg)](https://hub.docker.com/r/devatherock/git-sync/)
+[![CircleCI](https://circleci.com/gh/devatherock/git-sync.svg?style=svg)](https://circleci.com/gh/devatherock/git-sync)
 [![Docker Pulls - drone](https://img.shields.io/docker/pulls/devatherock/drone-git-sync.svg)](https://hub.docker.com/r/devatherock/drone-git-sync/)
 [![Docker Pulls - vela](https://img.shields.io/docker/pulls/devatherock/vela-git-sync.svg)](https://hub.docker.com/r/devatherock/vela-git-sync/)
+[![Docker Image Size](https://img.shields.io/docker/image-size/devatherock/vela-git-sync.svg?sort=date)](https://hub.docker.com/r/devatherock/vela-git-sync/)
+[![Docker Image Layers](https://img.shields.io/microbadger/layers/devatherock/vela-git-sync.svg)](https://microbadger.com/images/devatherock/vela-git-sync)
 # git-sync
 drone.io/CircleCI/vela plugin to sync the contents of a git repository with another
 
