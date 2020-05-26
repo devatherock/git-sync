@@ -41,3 +41,7 @@ will be used as the starting commit
 ### 2020-04-12
 - [Issue 3](https://github.com/devatherock/git-sync/issues/3) - Made the plugin
 compatible with vela
+
+## 1.0.5
+### 2020-05-26
+- Fixed the bug due to which last commit was skipped

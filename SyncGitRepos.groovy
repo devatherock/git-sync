@@ -1,6 +1,8 @@
 @Grab(group = 'commons-cli', module ='commons-cli', version = '1.4')
+@Grab(group = 'org.codehaus.groovy', module = 'groovy-cli-commons', version = '2.5.7')
 
 import groovy.transform.Field
+import groovy.cli.commons.CliBuilder
 
 import java.util.logging.Logger
 import java.util.regex.Pattern
@@ -19,6 +21,7 @@ cli.t(longOpt: 'token', args: 1, argName: 'token', 'Github access token')
 cli.n(longOpt: 'username', args: 1, argName: 'username', 'Username of last committer')
 cli.e(longOpt: 'email', args: 1, argName: 'email', 'Email address of last committer')
 cli._(longOpt: 'debug', args: 1, argName: 'debug', 'Flag to turn on debug logging')
+cli._(longOpt: 'test', args: 0, argName: 'test', 'Flag to test changes without committing to git')
 
 def options = cli.parse(args)
 
@@ -102,8 +105,8 @@ else {
             debugLog({ "Previous tag commit: ${previousTagCommit}".toString() })
 
             sourceCommits = getCommits(previousTagCommit)
-            sourceCommits.remove(sourceCommits.size() - 1) // Remove last commit as it would have already been merged
-            startingCommit = sourceCommits.last()
+            sourceCommits.remove(0) // Remove first commit as it would have already been merged
+            startingCommit = sourceCommits[0]
         }
     }
 }
@@ -126,7 +129,9 @@ sourceCommits.each { commit ->
 }
 
 // Push the changes to target remote
-logger.info(executeCommand("git push ${targetRemote} ${targetBranch}")[0].trim())
+if(!options.test) {
+    logger.info(executeCommand("git push ${targetRemote} ${targetBranch}")[0].trim())
+}
 
 
 /**
