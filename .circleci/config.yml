@@ -53,7 +53,7 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.5
+          TAG=1.0.6
           docker build -t devatherock/git-sync:$TAG -f docker/CircleCI.Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/git-sync:$TAG
@@ -66,7 +66,7 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.5
+          TAG=1.0.6
           docker build -t devatherock/drone-git-sync:$TAG -f docker/Drone.Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/drone-git-sync:$TAG
@@ -79,7 +79,7 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.5
+          TAG=1.0.6
           docker build -t devatherock/vela-git-sync:$TAG -f docker/Vela.Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/vela-git-sync:$TAG

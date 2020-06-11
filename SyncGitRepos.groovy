@@ -52,7 +52,7 @@ else {
 if(isHttp) {
     // If remote is http, git token has to be supplied
     if(!options.t) {
-        logger.severe({"Http remote '${targetRemoteUrl}' used but git token not supplied"})
+        logger.severe("Http remote '${targetRemoteUrl}' used but git token not supplied")
         System.exit(1)
     }
     else {
