@@ -1,6 +1,6 @@
 docker_image: &docker_image
   docker:
-    - image: docker:19.03.6
+    - image: cimg/openjdk:11.0
       auth:
         username: $DOCKER_USERNAME
         password: $DOCKER_PASSWORD
@@ -19,6 +19,28 @@ executors:
   
 version: 2.1
 jobs:
+  test:
+    executor: docker-executor
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/git-sync
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
+      - run: |
+          git clone --depth=1 --branch=master https://github.com/devatherock/gradle-includes.git ../gradle-includes
+          sh unit-tests.sh
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
+      - store_artifacts:
+          path: build/reports/jacoco
+      - store_test_results:
+          path: build/test-results
+
   groovy_script_to_jar:
     docker:
       - image: devatherock/drone-groovy-script-to-jar:0.6.2
@@ -70,7 +92,7 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.7
+          TAG=${CIRCLE_SHA1:0:8}
           docker build -t devatherock/git-sync:$TAG -f docker/CircleCI.Dockerfile .
           docker tag devatherock/git-sync:$TAG devatherock/git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
@@ -84,7 +106,7 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.7
+          TAG=${CIRCLE_SHA1:0:8}
           docker build -t devatherock/drone-git-sync:$TAG -f docker/Drone.Dockerfile .
           docker tag devatherock/drone-git-sync:$TAG devatherock/drone-git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
@@ -98,7 +120,7 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.7
+          TAG=${CIRCLE_SHA1:0:8}
           docker build -t devatherock/vela-git-sync:$TAG -f docker/Vela.Dockerfile .
           docker tag devatherock/vela-git-sync:$TAG devatherock/vela-git-sync:latest 
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
@@ -124,12 +146,20 @@ workflows:
   version: 2.1
   build_publish:
     jobs:
+      - test:
+          context:
+            - docker-credentials
+          filters:
+            branches:
+              only: master
       - groovy_script_to_jar:
           context:
             - docker-credentials
           filters:
             branches:
               only: master
+          requires:
+            - test
       - publish_circle:
           context:
             - docker-credentials
@@ -155,12 +185,20 @@ workflows:
             - publish_vela
   pr_check:
     jobs:
+      - test:
+          context:
+            - docker-credentials
+          filters:
+            branches:
+              ignore: master
       - groovy_script_to_jar:
           context:
             - docker-credentials
           filters:
             branches:
               ignore: master
+          requires:
+            - test    
       - docker_build_dry_run_circle:
           context:
             - docker-credentials

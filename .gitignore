@@ -1,4 +1,10 @@
 .project
 git-sync.iml
 *.jar
+!gradle-wrapper.jar
 .DS_Store
+/.gradle/
+/build/
+.classpath
+/bin/
+.settings

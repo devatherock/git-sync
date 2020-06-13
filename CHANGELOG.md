@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Changed
+- test([#9](https://github.com/devatherock/git-sync/issues/9)): Added unit tests
+
 ## [1.0.7] - 2021-01-16
 ### Changed
 - [#7](https://github.com/devatherock/git-sync/issues/7): Changed the order in which commits are applied.
