@@ -1,12 +1,16 @@
 docker_image: &docker_image
   docker:
     - image: docker:19.03.6
-
+    
+resource_class: &resource_class    
+  resource_class: small
+  
 version: 2
 jobs:
   groovy_script_to_jar:
     docker:
       - image: devatherock/drone-groovy-script-to-jar:2.5-alpine
+    <<: *resource_class
     working_directory: ~/git-sync
     environment:
       PLUGIN_SCRIPT_PATH: SyncGitRepos.groovy
@@ -17,8 +21,10 @@ jobs:
           root: ~/git-sync
           paths:
             - SyncGitRepos.jar
+            
   docker_build_dry_run_circle:
     <<: *docker_image
+    <<: *resource_class
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -28,6 +34,7 @@ jobs:
       - run: docker build -f docker/CircleCI.Dockerfile .
   docker_build_dry_run_drone:
     <<: *docker_image
+    <<: *resource_class
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -37,6 +44,7 @@ jobs:
       - run: docker build -f docker/Drone.Dockerfile .
   docker_build_dry_run_vela:
     <<: *docker_image
+    <<: *resource_class
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -44,8 +52,10 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: docker build -f docker/Vela.Dockerfile .
+      
   publish_circle:
     <<: *docker_image
+    <<: *resource_class
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -55,10 +65,13 @@ jobs:
       - run: |
           TAG=1.0.6
           docker build -t devatherock/git-sync:$TAG -f docker/CircleCI.Dockerfile .
+          docker tag devatherock/git-sync:$TAG devatherock/git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/git-sync:$TAG
+          docker push devatherock/git-sync:latest
   publish_drone:
     <<: *docker_image
+    <<: *resource_class
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -68,10 +81,13 @@ jobs:
       - run: |
           TAG=1.0.6
           docker build -t devatherock/drone-git-sync:$TAG -f docker/Drone.Dockerfile .
+          docker tag devatherock/drone-git-sync:$TAG devatherock/drone-git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/drone-git-sync:$TAG
+          docker push devatherock/drone-git-sync:latest
   publish_vela:
     <<: *docker_image
+    <<: *resource_class
     working_directory: ~/git-sync
     steps:
       - checkout
@@ -81,8 +97,26 @@ jobs:
       - run: |
           TAG=1.0.6
           docker build -t devatherock/vela-git-sync:$TAG -f docker/Vela.Dockerfile .
+          docker tag devatherock/vela-git-sync:$TAG devatherock/vela-git-sync:latest 
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/vela-git-sync:$TAG
+          docker push devatherock/vela-git-sync:latest
+          
+  notify:
+    docker:
+      - image: devatherock/simple-slack:0.3.0
+    <<: *resource_class  
+    environment:
+      PARAMETER_TEXT: "{{.CircleBuildUrl}} by {{.CircleUsername}}"
+    steps:
+      - run:
+          name: Success notification
+          command: /bin/simpleslack -c "#33ad7f"
+          when: on_success
+      - run:
+          name: Failure notification
+          command: /bin/simpleslack -c "#a1040c"
+          when: on_fail        
 
 workflows:
   version: 2
@@ -101,6 +135,11 @@ workflows:
       - publish_vela:
           requires:
             - groovy_script_to_jar
+      - notify:
+          requires:
+            - publish_circle
+            - publish_drone
+            - publish_vela
   pr_check:
     jobs:
       - groovy_script_to_jar:
