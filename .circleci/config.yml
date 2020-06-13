@@ -5,7 +5,7 @@ docker_image: &docker_image
 resource_class: &resource_class    
   resource_class: small
   
-version: 2
+version: 2.1
 jobs:
   groovy_script_to_jar:
     docker:
