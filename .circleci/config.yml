@@ -1,17 +1,32 @@
 docker_image: &docker_image
   docker:
     - image: docker:19.03.6
+      auth:
+        username: $DOCKER_USERNAME
+        password: $DOCKER_PASSWORD
     
 resource_class: &resource_class    
   resource_class: small
+  
+work_directory: &work_directory
+  working_directory: ~/git-sync
+  
+executors:
+  docker-executor:
+    <<: *docker_image
+    <<: *resource_class
+    <<: *work_directory  
   
 version: 2.1
 jobs:
   groovy_script_to_jar:
     docker:
-      - image: devatherock/drone-groovy-script-to-jar:2.5-alpine
+      - image: devatherock/drone-groovy-script-to-jar:0.6.2
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
     <<: *resource_class
-    working_directory: ~/git-sync
+    <<: *work_directory
     environment:
       PLUGIN_SCRIPT_PATH: SyncGitRepos.groovy
     steps:
@@ -23,9 +38,7 @@ jobs:
             - SyncGitRepos.jar
             
   docker_build_dry_run_circle:
-    <<: *docker_image
-    <<: *resource_class
-    working_directory: ~/git-sync
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
@@ -33,9 +46,7 @@ jobs:
           at: ~/git-sync
       - run: docker build -f docker/CircleCI.Dockerfile .
   docker_build_dry_run_drone:
-    <<: *docker_image
-    <<: *resource_class
-    working_directory: ~/git-sync
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
@@ -43,9 +54,7 @@ jobs:
           at: ~/git-sync
       - run: docker build -f docker/Drone.Dockerfile .
   docker_build_dry_run_vela:
-    <<: *docker_image
-    <<: *resource_class
-    working_directory: ~/git-sync
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
@@ -54,48 +63,42 @@ jobs:
       - run: docker build -f docker/Vela.Dockerfile .
       
   publish_circle:
-    <<: *docker_image
-    <<: *resource_class
-    working_directory: ~/git-sync
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.6
+          TAG=1.0.7
           docker build -t devatherock/git-sync:$TAG -f docker/CircleCI.Dockerfile .
           docker tag devatherock/git-sync:$TAG devatherock/git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/git-sync:$TAG
           docker push devatherock/git-sync:latest
   publish_drone:
-    <<: *docker_image
-    <<: *resource_class
-    working_directory: ~/git-sync
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.6
+          TAG=1.0.7
           docker build -t devatherock/drone-git-sync:$TAG -f docker/Drone.Dockerfile .
           docker tag devatherock/drone-git-sync:$TAG devatherock/drone-git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/drone-git-sync:$TAG
           docker push devatherock/drone-git-sync:latest
   publish_vela:
-    <<: *docker_image
-    <<: *resource_class
-    working_directory: ~/git-sync
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=1.0.6
+          TAG=1.0.7
           docker build -t devatherock/vela-git-sync:$TAG -f docker/Vela.Dockerfile .
           docker tag devatherock/vela-git-sync:$TAG devatherock/vela-git-sync:latest 
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
@@ -104,38 +107,48 @@ jobs:
           
   notify:
     docker:
-      - image: devatherock/simple-slack:0.3.0
-    <<: *resource_class  
+      - image: devatherock/simple-slack:0.4.0
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
+    <<: *resource_class
     environment:
-      PARAMETER_TEXT: "{{.CircleBuildUrl}} by {{.CircleUsername}}"
+      TEXT: "Success: {{.CircleBuildUrl}} by {{.CircleUsername}}"
+      COLOR: "#33ad7f"
+      CHANNEL: general
+      TITLE: "Build completed"
     steps:
-      - run:
-          name: Success notification
-          command: /bin/simpleslack -c "#33ad7f"
-          when: on_success
-      - run:
-          name: Failure notification
-          command: /bin/simpleslack -c "#a1040c"
-          when: on_fail        
+      - run: /bin/simpleslack
 
 workflows:
-  version: 2
+  version: 2.1
   build_publish:
     jobs:
       - groovy_script_to_jar:
+          context:
+            - docker-credentials
           filters:
             branches:
               only: master
       - publish_circle:
+          context:
+            - docker-credentials
           requires:
             - groovy_script_to_jar
       - publish_drone:
+          context:
+            - docker-credentials
           requires:
             - groovy_script_to_jar
       - publish_vela:
+          context:
+            - docker-credentials
           requires:
             - groovy_script_to_jar
       - notify:
+          context:
+            - docker-credentials
+            - slack-webhook
           requires:
             - publish_circle
             - publish_drone
@@ -143,15 +156,23 @@ workflows:
   pr_check:
     jobs:
       - groovy_script_to_jar:
+          context:
+            - docker-credentials
           filters:
             branches:
               ignore: master
       - docker_build_dry_run_circle:
+          context:
+            - docker-credentials
           requires:
             - groovy_script_to_jar
       - docker_build_dry_run_drone:
+          context:
+            - docker-credentials
           requires:
             - groovy_script_to_jar
       - docker_build_dry_run_vela:
+          context:
+            - docker-credentials
           requires:
             - groovy_script_to_jar

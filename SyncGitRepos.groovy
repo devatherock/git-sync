@@ -142,7 +142,7 @@ if(!options.test) {
  */
 def getCommits(String startingCommit) {
     def commits = []
-	String commitText = "git log --pretty=oneline -n ${commitLimit}".execute().text.trim()
+	String commitText = "git log --pretty=oneline -n ${commitLimit} --topo-order".execute().text.trim()
 
     // If any commits are present
     if(commitText) {

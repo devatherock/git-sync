@@ -23,7 +23,7 @@ git-sync:
   when:
     ref: refs/tags/v*
     event: tag
-  image: devatherock/drone-git-sync:1.0.6
+  image: devatherock/drone-git-sync:latest
   target_branch: prod
   secrets: [ git_sync_token ]
 ```
@@ -36,7 +36,7 @@ steps:
     ruleset:
       tag: refs/tags/v*
       event: tag
-    image: devatherock/vela-git-sync:1.0.6
+    image: devatherock/vela-git-sync:latest
     secrets: [ git_sync_token ]
     parameters:
       target_branch: prod
