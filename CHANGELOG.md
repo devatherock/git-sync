@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.7] - 2021-01-16
+### Changed
+- [#7](https://github.com/devatherock/git-sync/issues/7): Changed the order in which commits are applied.
+This prevents commits from different tracks from getting mixed together
+
 ## [1.0.6] - 2020-06-11
 ### Changed
 - A log statement which was causing runtime exception during `GString` to `String` conversion
