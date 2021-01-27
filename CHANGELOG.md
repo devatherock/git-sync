@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - test([#9](https://github.com/devatherock/git-sync/issues/9)): Added unit tests
+- feat([#5](https://github.com/devatherock/git-sync/issues/5)): Used one dockerfile to simplify build and release
 
 ## [1.0.7] - 2021-01-16
 ### Changed

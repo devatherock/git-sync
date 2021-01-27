@@ -59,32 +59,16 @@ jobs:
           paths:
             - SyncGitRepos.jar
             
-  docker_build_dry_run_circle:
+  docker_build_dry_run:
     executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: ~/git-sync
-      - run: docker build -f docker/CircleCI.Dockerfile .
-  docker_build_dry_run_drone:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/git-sync
-      - run: docker build -f docker/Drone.Dockerfile .
-  docker_build_dry_run_vela:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/git-sync
-      - run: docker build -f docker/Vela.Dockerfile .
+      - run: docker build -f docker/Dockerfile .
       
-  publish_circle:
+  publish:
     executor: docker-executor
     steps:
       - checkout
@@ -93,26 +77,21 @@ jobs:
           at: ~/git-sync
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
-          docker build -t devatherock/git-sync:$TAG -f docker/CircleCI.Dockerfile .
-          docker tag devatherock/git-sync:$TAG devatherock/git-sync:latest
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/git-sync:$TAG
-          docker push devatherock/git-sync:latest
-  publish_drone:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/git-sync
-      - run: |
-          TAG=${CIRCLE_SHA1:0:8}
-          docker build -t devatherock/drone-git-sync:$TAG -f docker/Drone.Dockerfile .
+          docker build -t devatherock/drone-git-sync:$TAG -f docker/Dockerfile .
           docker tag devatherock/drone-git-sync:$TAG devatherock/drone-git-sync:latest
+          docker tag devatherock/drone-git-sync:$TAG devatherock/vela-git-sync:$TAG
+          docker tag devatherock/drone-git-sync:$TAG devatherock/vela-git-sync:latest
+          docker tag devatherock/drone-git-sync:$TAG devatherock/git-sync:$TAG
+          docker tag devatherock/drone-git-sync:$TAG devatherock/git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/drone-git-sync:$TAG
           docker push devatherock/drone-git-sync:latest
-  publish_vela:
+          docker push devatherock/vela-git-sync:$TAG
+          docker push devatherock/vela-git-sync:latest
+          docker push devatherock/git-sync:$TAG
+          docker push devatherock/git-sync:latest
+          
+  publish_release:
     executor: docker-executor
     steps:
       - checkout
@@ -120,12 +99,16 @@ jobs:
       - attach_workspace:
           at: ~/git-sync
       - run: |
-          TAG=${CIRCLE_SHA1:0:8}
-          docker build -t devatherock/vela-git-sync:$TAG -f docker/Vela.Dockerfile .
-          docker tag devatherock/vela-git-sync:$TAG devatherock/vela-git-sync:latest 
+          TAG=${CIRCLE_TAG#v}
+          DEV_TAG=${CIRCLE_SHA1:0:8}
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker pull devatherock/drone-git-sync:$DEV_TAG
+          docker tag devatherock/drone-git-sync:$DEV_TAG devatherock/drone-git-sync:$TAG
+          docker tag devatherock/drone-git-sync:$TAG devatherock/vela-git-sync:$TAG
+          docker tag devatherock/drone-git-sync:$TAG devatherock/git-sync:$TAG
+          docker push devatherock/drone-git-sync:$TAG
           docker push devatherock/vela-git-sync:$TAG
-          docker push devatherock/vela-git-sync:latest
+          docker push devatherock/git-sync:$TAG
           
   notify:
     docker:
@@ -160,17 +143,7 @@ workflows:
               only: master
           requires:
             - test
-      - publish_circle:
-          context:
-            - docker-credentials
-          requires:
-            - groovy_script_to_jar
-      - publish_drone:
-          context:
-            - docker-credentials
-          requires:
-            - groovy_script_to_jar
-      - publish_vela:
+      - publish:
           context:
             - docker-credentials
           requires:
@@ -180,9 +153,23 @@ workflows:
             - docker-credentials
             - slack-webhook
           requires:
-            - publish_circle
-            - publish_drone
-            - publish_vela
+            - publish
+  release:
+    jobs:
+      - publish_release:
+          context:
+            - docker-credentials
+          filters:
+            branches:
+              only: non-existent-branch
+            tags:
+              only: /^v[0-9\.]+$/
+      - notify:
+          context:
+            - docker-credentials
+            - slack-webhook
+          requires:
+            - publish_release
   pr_check:
     jobs:
       - test:
@@ -199,17 +186,7 @@ workflows:
               ignore: master
           requires:
             - test    
-      - docker_build_dry_run_circle:
-          context:
-            - docker-credentials
-          requires:
-            - groovy_script_to_jar
-      - docker_build_dry_run_drone:
-          context:
-            - docker-credentials
-          requires:
-            - groovy_script_to_jar
-      - docker_build_dry_run_vela:
+      - docker_build_dry_run:
           context:
             - docker-credentials
           requires:

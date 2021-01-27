@@ -1,0 +1,59 @@
+#!/bin/sh
+
+TARGET_BRANCH=master
+if [ ! -z "$PLUGIN_TARGET_BRANCH" ]; then
+  TARGET_BRANCH=$PLUGIN_TARGET_BRANCH
+elif [ ! -z "$PARAMETER_TARGET_BRANCH" ]; then
+  TARGET_BRANCH=$PARAMETER_TARGET_BRANCH
+fi
+
+ENABLE_DEBUG=false
+if [ "$PLUGIN_DEBUG" = "true" ] || [ "$PARAMETER_DEBUG" = "true" ]; then
+  ENABLE_DEBUG=true
+fi
+
+if [ ! -z "$PLUGIN_TARGET_REPO" ]; then
+  TARGET_REPO=$PLUGIN_TARGET_REPO
+elif [ ! -z "$PARAMETER_TARGET_REPO" ]; then
+  TARGET_REPO=$PARAMETER_TARGET_REPO
+fi
+
+if [ ! -z "$PLUGIN_START_COMMIT" ]; then
+  START_COMMIT=$PLUGIN_START_COMMIT
+elif [ ! -z "$PARAMETER_START_COMMIT" ]; then
+  START_COMMIT=$PARAMETER_START_COMMIT
+fi
+
+if [ ! -z "$DRONE_COMMIT_AUTHOR" ]; then
+  USERNAME=$DRONE_COMMIT_AUTHOR
+elif [ ! -z "$BUILD_AUTHOR" ]; then
+  USERNAME=$BUILD_AUTHOR
+elif [ ! -z "$CIRCLE_USERNAME" ]; then
+  USERNAME=$CIRCLE_USERNAME  
+fi
+
+if [ ! -z "$DRONE_COMMIT_AUTHOR_EMAIL" ]; then
+  EMAIL=$DRONE_COMMIT_AUTHOR_EMAIL
+elif [ ! -z "$BUILD_AUTHOR_EMAIL" ]; then
+  EMAIL=$BUILD_AUTHOR_EMAIL
+fi
+
+ALL_OPTS="-tb $TARGET_BRANCH --debug $ENABLE_DEBUG -t $GIT_SYNC_TOKEN"
+
+if [ ! -z "$TARGET_REPO" ]; then
+   ALL_OPTS="$ALL_OPTS -tr $TARGET_REPO"
+fi
+
+if [ ! -z "$START_COMMIT" ]; then
+   ALL_OPTS="$ALL_OPTS -sc $START_COMMIT"
+fi
+
+if [ ! -z "$USERNAME" ]; then
+   ALL_OPTS="$ALL_OPTS -n $USERNAME"
+fi
+
+if [ ! -z "$EMAIL" ]; then
+   ALL_OPTS="$ALL_OPTS -e $EMAIL"
+fi
+
+java -jar /scripts/SyncGitRepos.jar $ALL_OPTS
