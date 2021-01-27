@@ -56,7 +56,7 @@ class SyncGitReposDockerSpec extends Specification {
     }
 
     @Unroll
-    void 'test git sync - start commit specified'() {
+    void 'test git sync - start commit specified, ci: #ci, debug: #debugEnabled'() {
         when:
         def output = ProcessUtil.executeCommand(['docker', 'run', '--rm',
                                                  '-v', "${System.properties['user.dir']}:/git-sync",
