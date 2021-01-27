@@ -1,3 +1,5 @@
+#!/bin/sh
+
 cp -r . ../git-sync-test
 cd ../git-sync-test
 export CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
