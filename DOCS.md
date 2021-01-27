@@ -62,6 +62,6 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "ssh key fingerprint"                                                             # Fingerprint of SSH key with write access to target repository
+            - "ssh key fingerprint"                                                         # Fingerprint of SSH key with write access to target repository
       - run: sh /scripts/entry-point.sh
 ```
