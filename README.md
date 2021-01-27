@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/devatherock/git-sync.svg?style=svg)](https://circleci.com/gh/devatherock/git-sync)
-[![Version](https://img.shields.io/docker/v/devatherock/vela-git-sync?sort=date)](https://hub.docker.com/r/devatherock/vela-git-sync/)
+[![Version](https://img.shields.io/docker/v/devatherock/vela-git-sync?sort=semver)](https://hub.docker.com/r/devatherock/vela-git-sync/)
 [![Coverage Status](https://coveralls.io/repos/github/devatherock/git-sync/badge.svg?branch=master)](https://coveralls.io/github/devatherock/git-sync?branch=master)
 [![Docker Pulls](https://img.shields.io/docker/pulls/devatherock/vela-git-sync.svg)](https://hub.docker.com/r/devatherock/vela-git-sync/)
 [![Docker Image Size](https://img.shields.io/docker/image-size/devatherock/vela-git-sync.svg?sort=date)](https://hub.docker.com/r/devatherock/vela-git-sync/)
