@@ -23,7 +23,7 @@ sourceSets {
     main {
         groovy {
             srcDirs = ['.']
-            exclude(['**/test/**', 'gradle/**', 'build/**', 'docker/**', 'bin/**', 'git-sync-test/**'])
+            exclude(['**/test/**', 'gradle/**', 'build/**', 'docker/**', 'bin/**'])
         }
     }
 }
@@ -46,9 +46,3 @@ ext.jacoco = [
     ]
 ]
 apply from: 'https://raw.githubusercontent.com/devatherock/gradle-includes/master/checks.gradle'
-
-test {
-    testLogging {
-        showStandardStreams = true
-    }
-}
