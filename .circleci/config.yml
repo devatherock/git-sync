@@ -102,7 +102,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}        
+          key: v1-dependencies-{{ checksum "build.gradle" }}
           
   publish_release:
     executor: docker-executor
@@ -190,18 +190,20 @@ workflows:
             - publish_release
   pr_check:
     jobs:
+      - functional_test:
+          context:
+            - docker-credentials
+          filters:
+            branches:
+              ignore: master
       - test:
           context:
             - docker-credentials
-          filters:
-            branches:
-              ignore: master
+          requires:
+            - functional_test
       - groovy_script_to_jar:
           context:
             - docker-credentials
-          filters:
-            branches:
-              ignore: master
           requires:
             - test    
       - docker_build_dry_run:
