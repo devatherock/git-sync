@@ -46,3 +46,9 @@ ext.jacoco = [
     ]
 ]
 apply from: 'https://raw.githubusercontent.com/devatherock/gradle-includes/master/checks.gradle'
+
+test {
+    testLogging {
+        showStandardStreams = true
+    }
+}
