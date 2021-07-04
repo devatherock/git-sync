@@ -10,4 +10,5 @@ git remote set-url origin "https://git-sync-token:$GIT_TOKEN@github.com/devather
 exit_code=$?
 cd ..
 rm -rf git-sync-test
+git remote set-url origin git@github.com:devatherock/git-sync.git
 exit $exit_code

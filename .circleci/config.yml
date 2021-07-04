@@ -193,6 +193,7 @@ workflows:
       - functional_test:
           context:
             - docker-credentials
+            - git-token
           filters:
             branches:
               ignore: master
