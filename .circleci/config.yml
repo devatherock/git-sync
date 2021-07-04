@@ -30,12 +30,7 @@ jobs:
             - v1-dependencies-{{ checksum "build.gradle" }}
             - v1-dependencies-
       - run: |
-          git clone --depth=1 --branch=master https://github.com/devatherock/gradle-includes.git ../gradle-includes
           sh unit-tests.sh
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
       - store_artifacts:
           path: build/reports/jacoco
       - store_test_results:
@@ -90,6 +85,24 @@ jobs:
           docker push devatherock/vela-git-sync:latest
           docker push devatherock/git-sync:$TAG
           docker push devatherock/git-sync:latest
+          
+  functional_test:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/git-sync
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            - v1-dependencies-
+      - run: |
+          sh functional-tests.sh
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}        
           
   publish_release:
     executor: docker-executor
@@ -148,12 +161,17 @@ workflows:
             - docker-credentials
           requires:
             - groovy_script_to_jar
+      - functional_test:
+          context:
+            - docker-credentials
+          requires:
+            - publish
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - publish
+            - functional_test
   release:
     jobs:
       - publish_release:

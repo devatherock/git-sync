@@ -2,6 +2,9 @@ package io.github.devatherock.util
 
 import groovy.util.logging.Log
 
+/**
+ * Utility class for sub-processes
+ */
 @Log
 class ProcessUtil {
 

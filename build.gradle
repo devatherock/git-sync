@@ -45,4 +45,4 @@ ext.jacoco = [
         ]
     ]
 ]
-apply from: '../gradle-includes/checks.gradle'
+apply from: 'https://raw.githubusercontent.com/devatherock/gradle-includes/master/checks.gradle'
