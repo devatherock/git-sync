@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Functional tests to CI pipeline
+
 ### Changed
 - fix: Fixed a few Codacy code violations
 

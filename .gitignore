@@ -8,3 +8,4 @@ git-sync.iml
 .classpath
 /bin/
 .settings
+checkstyle.xml
