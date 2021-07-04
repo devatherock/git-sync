@@ -23,7 +23,7 @@ sourceSets {
     main {
         groovy {
             srcDirs = ['.']
-            exclude(['**/test/**', 'gradle/**', 'build/**', 'docker/**', 'bin/**'])
+            exclude(['**/test/**', 'gradle/**', 'build/**', 'docker/**', 'bin/**', 'git-sync-test/**'])
         }
     }
 }

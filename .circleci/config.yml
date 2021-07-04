@@ -102,7 +102,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}        
+          key: v1-dependencies-{{ checksum "build.gradle" }}
           
   publish_release:
     executor: docker-executor
@@ -164,6 +164,7 @@ workflows:
       - functional_test:
           context:
             - docker-credentials
+            - git-token
           requires:
             - publish
       - notify:
