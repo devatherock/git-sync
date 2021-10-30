@@ -18,7 +18,7 @@ docker run --rm \
   -e PLUGIN_TARGET_BRANCH=test \
   -v path/to/repo:/repo \
   -w=/repo \
-  devatherock/git-sync:1.1.0
+  devatherock/git-sync:2.0.0
 ```
 
 ### CI
@@ -46,7 +46,7 @@ git-sync:
   when:
     ref: refs/tags/v*
     event: tag
-  image: devatherock/git-sync:1.1.0
+  image: devatherock/git-sync:2.0.0
   target_branch: prod
   secrets: [ git_sync_token ]
 ```
@@ -59,7 +59,7 @@ steps:
     ruleset:
       tag: refs/tags/v*
       event: tag
-    image: devatherock/git-sync:1.1.0
+    image: devatherock/git-sync:2.0.0
     secrets: [ git_sync_token ]
     parameters:
       target_branch: prod
@@ -73,7 +73,7 @@ version: 2
 jobs:
   sync:
     docker:
-      - image: devatherock/git-sync:1.1.0
+      - image: devatherock/git-sync:2.0.0
     working_directory: ~/my-source-repo
     environment:
       PLUGIN_TARGET_REPO: "git@bitbucket.org:xyz/my-target-repo.git"                        # Git URI of target repository. If not specified, same as the source repo
@@ -92,6 +92,7 @@ jobs:
 
 ## Tests
 To test the latest plugin image, run the below command
+
 ```shell
 sh functional-tests.sh
 ```
