@@ -72,17 +72,9 @@ jobs:
           at: ~/git-sync
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
-          docker build -t devatherock/drone-git-sync:$TAG -f docker/Dockerfile .
-          docker tag devatherock/drone-git-sync:$TAG devatherock/drone-git-sync:latest
-          docker tag devatherock/drone-git-sync:$TAG devatherock/vela-git-sync:$TAG
-          docker tag devatherock/drone-git-sync:$TAG devatherock/vela-git-sync:latest
-          docker tag devatherock/drone-git-sync:$TAG devatherock/git-sync:$TAG
-          docker tag devatherock/drone-git-sync:$TAG devatherock/git-sync:latest
+          docker build -t devatherock/git-sync:$TAG -f docker/Dockerfile .
+          docker tag devatherock/git-sync:$TAG devatherock/git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/drone-git-sync:$TAG
-          docker push devatherock/drone-git-sync:latest
-          docker push devatherock/vela-git-sync:$TAG
-          docker push devatherock/vela-git-sync:latest
           docker push devatherock/git-sync:$TAG
           docker push devatherock/git-sync:latest
           
@@ -99,6 +91,8 @@ jobs:
             - v1-dependencies-
       - run: |
           sh functional-tests.sh
+      - store_test_results:
+          path: build/test-results
       - save_cache:
           paths:
             - ~/.gradle
@@ -115,12 +109,8 @@ jobs:
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker pull devatherock/drone-git-sync:$DEV_TAG
-          docker tag devatherock/drone-git-sync:$DEV_TAG devatherock/drone-git-sync:$TAG
-          docker tag devatherock/drone-git-sync:$TAG devatherock/vela-git-sync:$TAG
-          docker tag devatherock/drone-git-sync:$TAG devatherock/git-sync:$TAG
-          docker push devatherock/drone-git-sync:$TAG
-          docker push devatherock/vela-git-sync:$TAG
+          docker pull devatherock/git-sync:$DEV_TAG
+          docker tag devatherock/git-sync:$DEV_TAG devatherock/git-sync:$TAG
           docker push devatherock/git-sync:$TAG
           
   notify:

@@ -7,6 +7,9 @@
 ### Changed
 - fix: Fixed a few Codacy code violations
 
+### Removed
+- [#7](https://github.com/devatherock/git-sync/issues/20): Publishing of `drone-git-sync` and `vela-git-sync` images
+
 ## [1.1.0] - 2021-01-27
 ### Changed
 - test([#9](https://github.com/devatherock/git-sync/issues/9)): Added unit tests

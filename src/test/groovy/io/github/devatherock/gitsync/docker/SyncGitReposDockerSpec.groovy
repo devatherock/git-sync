@@ -12,33 +12,31 @@ class SyncGitReposDockerSpec extends Specification {
     @Shared
     def config = [
             'drone'   : [
-                    'image'      : 'devatherock/drone-git-sync:latest',
                     'envPrefix'  : 'PLUGIN_',
                     'emailVar'   : 'DRONE_COMMIT_AUTHOR_EMAIL',
                     'usernameVar': 'DRONE_COMMIT_AUTHOR'
             ],
             'vela'    : [
-                    'image'      : 'devatherock/vela-git-sync:latest',
                     'envPrefix'  : 'PARAMETER_',
                     'emailVar'   : 'BUILD_AUTHOR_EMAIL',
                     'usernameVar': 'BUILD_AUTHOR'
             ],
             'circleci': [
-                    'image'      : 'devatherock/git-sync:latest',
                     'envPrefix'  : 'PLUGIN_',
                     'emailVar'   : 'CIRCLE_USERNAME',
                     'usernameVar': 'CIRCLE_USERNAME'
             ]
     ]
 
+    @Shared
+    String dockerImage = 'devatherock/git-sync:latest'
+
     String currentBranch = System.getenv('CURRENT_BRANCH')
     String testBranch = 'func-test'
 
     void setupSpec() {
         System.setProperty('java.util.logging.SimpleFormatter.format', '%5$s%n')
-        ProcessUtil.executeCommand("docker pull ${config['drone'].image}")
-        ProcessUtil.executeCommand("docker pull ${config['vela'].image}")
-        ProcessUtil.executeCommand("docker pull ${config['circleci'].image}")
+        ProcessUtil.executeCommand("docker pull ${dockerImage}")
     }
 
     void setup() {
@@ -68,7 +66,7 @@ class SyncGitReposDockerSpec extends Specification {
                                                  '-e', "GIT_SYNC_TOKEN=${System.getenv('GIT_TOKEN')}",
                                                  '-e', "${config[ci].emailVar}=devatherock@gmail.com",
                                                  '-e', "${config[ci].usernameVar}=devatherock",
-                                                 config[ci].image])
+                                                 dockerImage])
 
         then:
         output[0] == 0
