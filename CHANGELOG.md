@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - Used custom ssh key to push to github
+- Upgraded to gradle 7 and groovy 3
 
 ## [2.0.0] - 2021-10-29
 ### Added
