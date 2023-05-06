@@ -1,10 +1,11 @@
-import io.github.devatherock.util.ProcessUtil
-import spock.lang.Specification
-import spock.lang.Unroll
-
 import java.util.logging.Handler
 import java.util.logging.LogRecord
 import java.util.logging.Logger
+
+import io.github.devatherock.util.ProcessUtil
+
+import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * Test class for SyncGitRepos.groovy

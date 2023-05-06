@@ -8,5 +8,6 @@ git-sync.iml
 .classpath
 /bin/
 .settings
+code-formatter.xml
 checkstyle.xml
 git-sync-test

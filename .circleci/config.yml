@@ -1,6 +1,6 @@
 docker_image: &docker_image
   docker:
-    - image: cimg/openjdk:11.0
+    - image: cimg/openjdk:17.0
       auth:
         username: $DOCKER_USERNAME
         password: $DOCKER_PASSWORD
@@ -10,6 +10,18 @@ resource_class: &resource_class
   
 work_directory: &work_directory
   working_directory: ~/git-sync
+
+release_filter: &release_filter
+  filters:
+    branches:
+      only: non-existent-branch
+    tags:
+      only: /^v[0-9\.]+$/
+
+pr_filter: &pr_filter
+  filters:
+    branches:
+      ignore: master
   
 executors:
   docker-executor:
@@ -41,7 +53,7 @@ jobs:
 
   groovy_script_to_jar:
     docker:
-      - image: devatherock/drone-groovy-script-to-jar:0.6.2
+      - image: devatherock/scriptjar:1.0.0
         auth:
           username: $DOCKER_USERNAME
           password: $DOCKER_PASSWORD
@@ -174,15 +186,12 @@ workflows:
       - publish_release:
           context:
             - docker-credentials
-          filters:
-            branches:
-              only: non-existent-branch
-            tags:
-              only: /^v[0-9\.]+$/
+          <<: *release_filter
       - notify:
           context:
             - docker-credentials
             - slack-webhook
+          <<: *release_filter
           requires:
             - publish_release
   pr_check:
@@ -190,15 +199,11 @@ workflows:
       - test:
           context:
             - docker-credentials
-          filters:
-            branches:
-              ignore: master
+          <<: *pr_filter
       - groovy_script_to_jar:
           context:
             - docker-credentials
-          filters:
-            branches:
-              ignore: master
+          <<: *pr_filter
           requires:
             - test    
       - docker_build_dry_run:

@@ -1,6 +1,7 @@
 package io.github.devatherock.gitsync.docker
 
 import io.github.devatherock.util.ProcessUtil
+
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll

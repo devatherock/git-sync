@@ -1,12 +1,12 @@
 @Grab(group = 'commons-cli', module = 'commons-cli', version = '1.4')
-@Grab(group = 'org.codehaus.groovy', module = 'groovy-cli-commons', version = '2.5.7')
+@Grab(group = 'org.codehaus.groovy', module = 'groovy-cli-commons', version = '3.0.9')
 
-import groovy.transform.Field
-import groovy.cli.commons.CliBuilder
-
+import java.util.function.Supplier
 import java.util.logging.Logger
 import java.util.regex.Pattern
-import java.util.function.Supplier
+
+import groovy.cli.commons.CliBuilder
+import groovy.transform.Field
 
 System.setProperty('java.util.logging.SimpleFormatter.format', '%5$s%n')
 @Field Logger logger = Logger.getLogger('SyncGitRepos.log')
