@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 ### Changed
+- Upgraded spotless to `6.18.0`
+
+## [3.0.0] - 2023-05-06
+### Changed
 - Used custom ssh key to push to github
 - Upgraded to gradle 7 and groovy 3
 
