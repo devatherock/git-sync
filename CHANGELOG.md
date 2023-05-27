@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - Upgraded spotless to `6.18.0`
+- Updated dockerhub readme in CI pipeline
 
 ## [3.0.0] - 2023-05-06
 ### Changed

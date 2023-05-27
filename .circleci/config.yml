@@ -93,6 +93,20 @@ jobs:
           docker push devatherock/git-sync:$TAG
           docker push devatherock/git-sync:latest
           
+  dockerhub_readme:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    steps:
+      - checkout
+      - run: |
+          docker run -v $PWD:/workspace \
+              -e DOCKERHUB_USERNAME \
+              -e DOCKERHUB_PASSWORD \
+              -e DOCKERHUB_REPOSITORY='devatherock/git-sync' \
+              -e SHORT_DESCRIPTION='CI plugin to sync the contents of a git repository with another' \
+              -e README_FILEPATH='/workspace/README.md' \
+              peterevans/dockerhub-description:3.4.1 
+          
   functional_test:
     machine:
       image: ubuntu-2004:202010-01
@@ -169,12 +183,18 @@ workflows:
             - docker-credentials
           requires:
             - groovy_script_to_jar
+      - dockerhub_readme:
+          context:
+            - docker-credentials
+            - dockerhub-readme-credentials
+          requires:
+            - publish
       - functional_test:
           context:
             - docker-credentials
             - git-token
           requires:
-            - publish
+            - dockerhub_readme
       - notify:
           context:
             - docker-credentials
