@@ -4,6 +4,7 @@
 ### Changed
 - Upgraded spotless to `6.18.0`
 - Updated dockerhub readme in CI pipeline
+- Built a multi-arch docker image
 
 ## [3.0.0] - 2023-05-06
 ### Changed

@@ -76,7 +76,12 @@ jobs:
       - setup_remote_docker
       - attach_workspace:
           at: ~/git-sync
-      - run: docker build -f docker/Dockerfile .
+      - run: |
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -f docker/Dockerfile .
       
   publish:
     executor: docker-executor
@@ -87,11 +92,15 @@ jobs:
           at: ~/git-sync
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
-          docker build -t devatherock/git-sync:$TAG -f docker/Dockerfile .
-          docker tag devatherock/git-sync:$TAG devatherock/git-sync:latest
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/git-sync:$TAG
-          docker push devatherock/git-sync:latest
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            -t devatherock/git-sync:$TAG \
+            -t devatherock/git-sync:latest \
+            -f docker/Dockerfile .
           
   dockerhub_readme:
     machine:
@@ -141,9 +150,10 @@ jobs:
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker pull devatherock/git-sync:$DEV_TAG
-          docker tag devatherock/git-sync:$DEV_TAG devatherock/git-sync:$TAG
-          docker push devatherock/git-sync:$TAG
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx imagetools create \
+            -t devatherock/git-sync:$TAG devatherock/git-sync:$DEV_TAG
           
   notify:
     docker:
