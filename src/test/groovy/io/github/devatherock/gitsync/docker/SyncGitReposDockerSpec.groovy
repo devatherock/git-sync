@@ -37,7 +37,10 @@ class SyncGitReposDockerSpec extends Specification {
 
     void setupSpec() {
         System.setProperty('java.util.logging.SimpleFormatter.format', '%5$s%n')
-        ProcessUtil.executeCommand("docker pull ${dockerImage}")
+
+        if (!Boolean.getBoolean('skip.pull')) {
+            ProcessUtil.executeCommand("docker pull ${dockerImage}")
+        }
     }
 
     void setup() {

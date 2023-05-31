@@ -44,6 +44,8 @@ compileGroovy {
 
 test {
     useJUnitPlatform()
+    
+    systemProperty 'skip.pull', System.properties['skip.pull']
 }
 
 ext.jacoco = [

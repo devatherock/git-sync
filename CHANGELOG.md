@@ -5,7 +5,7 @@
 - Upgraded spotless to `6.18.0`
 - Updated dockerhub readme in CI pipeline
 - Built a multi-arch docker image
-- Pinned git cli version to `2.20.4` in the docker image, to get around the `safe.directory` check
+- Pinned git cli version to the [highest available version](https://pkgs.alpinelinux.org/packages?name=git&branch=v3.12&repo=&arch=&maintainer=) less than [2.30.3](https://github.com/git/git/commit/8959555cee7ec045958f9b6dd62e541affb7e7d9) in the docker image, to get around the `safe.directory` check
 
 ## [3.0.0] - 2023-05-06
 ### Changed

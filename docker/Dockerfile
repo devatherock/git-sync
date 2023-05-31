@@ -7,7 +7,7 @@ USER root
 RUN apk --update add openssh
 
 # Install git. Pinned git version to get around the safe.directory check
-RUN apk add git=2.20.4-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.9/main
+RUN apk add git=2.26.3-r1 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.12/main
 
 COPY SyncGitRepos.jar /scripts/
 COPY docker/entry-point.sh /scripts/
