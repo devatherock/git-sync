@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM amazoncorretto:8u372-alpine3.14-jre
 
 LABEL maintainer="devatherock@gmail.com>"
 
