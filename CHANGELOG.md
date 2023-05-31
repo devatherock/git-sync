@@ -5,6 +5,7 @@
 - Upgraded spotless to `6.18.0`
 - Updated dockerhub readme in CI pipeline
 - Built a multi-arch docker image
+- Pinned git cli version to `2.20.4` in the docker image, to get around the `safe.directory` check
 
 ## [3.0.0] - 2023-05-06
 ### Changed
