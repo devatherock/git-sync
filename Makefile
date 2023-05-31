@@ -1,11 +1,12 @@
 DOCKER_TAG=latest
+additional_gradle_args=
 
 clean:
 	./gradlew clean
 test:
 	sh unit-tests.sh	
 functional-test:
-	sh functional-tests.sh
+	sh functional-tests.sh "$(additional_gradle_args)"
 jar-build:
 	docker run --rm \
 	-v $(CURDIR):/work \
