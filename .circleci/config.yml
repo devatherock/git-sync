@@ -50,6 +50,10 @@ jobs:
           path: build/reports/jacoco
       - store_test_results:
           path: build/test-results
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}    
 
   groovy_script_to_jar:
     docker:
@@ -92,7 +96,7 @@ jobs:
           at: ~/git-sync
       - run: |
           TAG=${CIRCLE_SHA1:0:8}
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker buildx create --name rockbuilder \
             --driver docker-container --use --bootstrap
           docker buildx build \
@@ -105,6 +109,7 @@ jobs:
   dockerhub_readme:
     machine:
       image: ubuntu-2204:2023.04.2
+      resource_class: medium
     steps:
       - checkout
       - run: |
@@ -119,6 +124,7 @@ jobs:
   functional_test:
     machine:
       image: ubuntu-2004:202010-01
+      resource_class: medium
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -128,8 +134,8 @@ jobs:
           at: ~/git-sync
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "build.gradle" }}
-            - v1-dependencies-
+            - v1-integration-{{ checksum "build.gradle" }}
+            - v1-integration-
       - run: |
           sh functional-tests.sh
       - store_test_results:
@@ -137,7 +143,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
+          key: v1-integration-{{ checksum "build.gradle" }}
           
   publish_release:
     executor: docker-executor
@@ -149,7 +155,7 @@ jobs:
       - run: |
           TAG=${CIRCLE_TAG#v}
           DEV_TAG=${CIRCLE_SHA1:0:8}
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker buildx create --name rockbuilder \
             --driver docker-container --use --bootstrap
           docker buildx imagetools create \

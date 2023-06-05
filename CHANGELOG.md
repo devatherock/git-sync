@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 ### Changed
+- Used separate cache for integration tests
+
+## [4.0.0] - 2023-05-30
 - Upgraded spotless to `6.18.0`
 - Updated dockerhub readme in CI pipeline
 - Built a multi-arch docker image
