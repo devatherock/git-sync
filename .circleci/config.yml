@@ -27,6 +27,16 @@ executors:
   docker-executor:
     <<: *docker_image
     <<: *resource_class
+    <<: *work_directory
+  machine-executor:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    resource_class: medium
+    <<: *work_directory
+  arm-executor:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
     <<: *work_directory  
   
 version: 2.1
@@ -107,9 +117,7 @@ jobs:
             -f docker/Dockerfile .
           
   dockerhub_readme:
-    machine:
-      image: ubuntu-2204:2023.04.2
-      resource_class: medium
+    executor: machine-executor
     steps:
       - checkout
       - run: |
@@ -122,9 +130,10 @@ jobs:
               peterevans/dockerhub-description:3.4.1 
           
   functional_test:
-    machine:
-      image: ubuntu-2004:202010-01
-      resource_class: medium
+    parameters:
+      runner:
+        type: executor
+    executor: << parameters.runner >>
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -206,17 +215,28 @@ workflows:
           requires:
             - publish
       - functional_test:
+          name: functional_test_amd
           context:
             - docker-credentials
             - git-token
+          runner: machine-executor
           requires:
             - dockerhub_readme
+      - functional_test:
+          name: functional_test_arm
+          context:
+            - docker-credentials
+            - git-token
+          runner: arm-executor
+          requires:
+            - functional_test_amd
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - functional_test
+            - functional_test_arm
+
   release:
     jobs:
       - publish_release:
