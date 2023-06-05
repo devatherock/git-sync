@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - Used separate cache for integration tests
+- Integration tested the arm image
 
 ## [4.0.0] - 2023-05-30
 - Upgraded spotless to `6.18.0`
