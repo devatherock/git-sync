@@ -1,9 +1,12 @@
 DOCKER_TAG=latest
-additional_gradle_args=
+all=false
 
 clean:
 	./gradlew clean
 test:
+ifeq ($(all), true)
+	yamllint -d relaxed .circleci --no-warnings
+endif
 	sh unit-tests.sh	
 functional-test:
 	sh functional-tests.sh "$(additional_gradle_args)"
