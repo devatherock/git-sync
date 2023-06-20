@@ -255,18 +255,8 @@ workflows:
             - publish_release
   pr_check:
     jobs:
-      - test:
+      - dockerhub_readme:
           context:
             - docker-credentials
+            - dockerhub-readme-credentials
           <<: *pr_filter
-      - groovy_script_to_jar:
-          context:
-            - docker-credentials
-          <<: *pr_filter
-          requires:
-            - test
-      - docker_build_dry_run:
-          context:
-            - docker-credentials
-          requires:
-            - groovy_script_to_jar
