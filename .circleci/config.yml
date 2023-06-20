@@ -1,13 +1,16 @@
+docker_auth: &docker_auth
+  auth:
+    username: $DOCKER_USERNAME
+    password: $DOCKER_PASSWORD
+
 docker_image: &docker_image
   docker:
     - image: cimg/openjdk:17.0
-      auth:
-        username: $DOCKER_USERNAME
-        password: $DOCKER_PASSWORD
-    
-resource_class: &resource_class    
+      <<: *docker_auth
+
+resource_class: &resource_class
   resource_class: small
-  
+
 work_directory: &work_directory
   working_directory: ~/git-sync
 
@@ -22,7 +25,7 @@ pr_filter: &pr_filter
   filters:
     branches:
       ignore: master
-  
+
 executors:
   docker-executor:
     <<: *docker_image
@@ -37,8 +40,8 @@ executors:
     machine:
       image: ubuntu-2004:2022.04.1
     resource_class: arm.medium
-    <<: *work_directory  
-  
+    <<: *work_directory
+
 version: 2.1
 jobs:
   test:
@@ -63,14 +66,12 @@ jobs:
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}    
+          key: v1-dependencies-{{ checksum "build.gradle" }}
 
   groovy_script_to_jar:
     docker:
       - image: devatherock/scriptjar:1.0.0
-        auth:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
+        <<: *docker_auth
     <<: *resource_class
     <<: *work_directory
     environment:
@@ -82,7 +83,7 @@ jobs:
           root: ~/git-sync
           paths:
             - SyncGitRepos.jar
-            
+
   docker_build_dry_run:
     executor: docker-executor
     steps:
@@ -96,7 +97,7 @@ jobs:
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             -f docker/Dockerfile .
-      
+
   publish:
     executor: docker-executor
     steps:
@@ -115,20 +116,24 @@ jobs:
             -t devatherock/git-sync:$TAG \
             -t devatherock/git-sync:latest \
             -f docker/Dockerfile .
-          
+
   dockerhub_readme:
-    executor: machine-executor
+    docker:
+      - image: peterevans/dockerhub-description:3.4.2
+        <<: *docker_auth
+    <<: *resource_class
+    <<: *work_directory
+    environment:
+      DOCKERHUB_REPOSITORY: 'devatherock/git-sync'
+      SHORT_DESCRIPTION: 'CI plugin to sync the contents of a git repository with another'
+      README_FILEPATH: README.md
     steps:
       - checkout
+      - attach_workspace:
+          at: ~/git-sync
       - run: |
-          docker run -v $PWD:/workspace \
-              -e DOCKERHUB_USERNAME \
-              -e DOCKERHUB_PASSWORD \
-              -e DOCKERHUB_REPOSITORY='devatherock/git-sync' \
-              -e SHORT_DESCRIPTION='CI plugin to sync the contents of a git repository with another' \
-              -e README_FILEPATH='/workspace/README.md' \
-              peterevans/dockerhub-description:3.4.1 
-          
+          sh /entrypoint.sh
+
   functional_test:
     parameters:
       runner:
@@ -153,7 +158,7 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-integration-{{ checksum "build.gradle" }}
-          
+
   publish_release:
     executor: docker-executor
     steps:
@@ -169,13 +174,11 @@ jobs:
             --driver docker-container --use --bootstrap
           docker buildx imagetools create \
             -t devatherock/git-sync:$TAG devatherock/git-sync:$DEV_TAG
-          
+
   notify:
     docker:
-      - image: devatherock/simple-slack:0.7.0
-        auth:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
+      - image: devatherock/simple-slack:1.0.0
+        <<: *docker_auth
     <<: *resource_class
     environment:
       TEXT: "Success: {{.CircleBuildUrl}} by {{.CircleUsername}}"
@@ -261,7 +264,7 @@ workflows:
             - docker-credentials
           <<: *pr_filter
           requires:
-            - test    
+            - test
       - docker_build_dry_run:
           context:
             - docker-credentials
